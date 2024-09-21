@@ -1,79 +1,42 @@
+/*
+    Display hostname on the Gnome Shell panel
+    Developed on GNOME Shell 46. Probably also works with earlier versions.
+    (c) Fabrício Santos 2024
+    License: GPL v3
+*/
+
 import Clutter from 'gi://Clutter';
 import GObject from 'gi://GObject';
-import Shell from 'gi://Shell';
 import St from 'gi://St';
+import GLib from 'gi://GLib';
 
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 
-function getKernelVersion() {
-    let version = null;
-    let content = null;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-    try {
-        content = Shell.get_file_contents_utf8_sync('/proc/version');
-    } catch (error) {
-        console.error(error);
-        content = 'unknown';
-        version = content;
-    }
-    
-
-    if (content.indexOf('Debian') != -1) {
-        /* Debian: get the version from the end of /proc/version:
-         *
-         *     $ cat /proc/version
-         *     ... <much stuff here> ... #1 SMP Debian 5.4.6-1 (2019-12-27)
-         */
-        let elems = content.split(' ');
-        if (elems.length > 2)
-            version = elems[elems.length - 2];
-    }
-
-    if (version == null) {
-        /* Otherwise: get the version from the beginning of /proc/version:
-         *
-         *     $ cat /proc/version
-         *     Linux version 5.4.5-arch1-1.1 ... <much stuff here> ...
-         */
-        let elems = content.split(' ');
-        if (elems.length > 3)
-            version = elems[2];
-    }
-
-    return version;
-}
-
-let KernelButton = GObject.registerClass(
-class KernelButton extends PanelMenu.Button {
+const Indicator = GObject.registerClass(
+class Indicator extends PanelMenu.Button {
     _init() {
-        super._init(0.0, 'Kernel Indicator');
+        super._init(0.0, _('My Shiny Indicator'));
 
-        let version = getKernelVersion();
-        if (version == null) {
-            version = 'Linux';
-        }
+        const hostname = GLib.get_host_name();
 
-        let label = new St.Label({ text: version,
+        let label = new St.Label({ text: hostname,
                                    y_expand: true,
                                    y_align: Clutter.ActorAlign.CENTER });
-        this.add_child(label);	
+        this.add_child(label);
     }
 });
 
-export default class KernelIndicatorExtension {
-
-    constructor() {
-        this.kernelIndicatorButton = null;
-    }
-
+export default class IndicatorExampleExtension extends Extension {
     enable() {
-        this.kernelIndicatorButton = new KernelButton();
-        Main.panel.addToStatusArea('kernel-indicator', this.kernelIndicatorButton);
+        this._indicator = new Indicator();
+        Main.panel.addToStatusArea(this.uuid, this._indicator);
     }
 
     disable() {
-        this.kernelIndicatorButton.destroy();
-        this.kernelIndicatorButton = null;
+        this._indicator.destroy();
+        this._indicator = null;
     }
 }
