@@ -2,7 +2,7 @@
   "name": "Hostname On Panel",
   "description": "Displays the Hostname on the Gnome Panel. Helpful when working with multiport KVW switches or accessing remote hosts where it is easy to loose track of which machine you are working on.",
   "uuid": "hostname-on-panel@casadasereia.net",
-  "shell-version": [ "46" ],
+  "shell-version": [ "46", "47", "48" ],
   "url": "https://github.com/scrt4evr/hostname-on-panel",
   "version": "1.0"
 }
